@@ -3,45 +3,96 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
-class TimeZoneController extends Controller
+class TimezoneController extends Controller
 {
+
+    private $apiKey = 'BWXLX3TQEYCM';
+
     public function index()
     {
-        return view('converter', [
-            'timezones' => timezone_identifiers_list(),
-        ]);
+        $zones = [];
+
+        try {
+            $response = Http::get('http://api.timezonedb.com/v2.1/list-time-zone', [
+                'key'    => $this->apiKey,
+                'format' => 'json',
+            ]);
+
+            if ($response->successful() && isset($response->json()['zones'])) {
+                $zones = collect($response->json()['zones'])->pluck('zoneName')->toArray();
+            }
+        } catch (\Throwable $e) {
+
+        }
+
+
+        if (empty($zones)) {
+            $zones = \DateTimeZone::listIdentifiers();
+        }
+
+        return view('welcome', compact('zones'));
     }
 
     public function convert(Request $request)
     {
         $request->validate([
-            'datetime' => 'required',
-            'from_timezone' => 'required',
-            'to_timezone' => 'required',
+            'time' => 'required',
+            'from' => 'required',
+            'to'   => 'required',
         ]);
 
-        $datetime = $request->input('datetime');
-        $from = $request->input('from_timezone');
-        $to = $request->input('to_timezone');
+        $timeInput = $request->input('time');
+        $from = $request->input('from');
+        $to = $request->input('to');
 
-        // Convert input time
-        $dtFrom = Carbon::createFromFormat('Y-m-d\TH:i', $datetime, $from);
-        $input_display = $dtFrom->format('Y-m-d H:i:s');
+        $today = date('Y-m-d');
+        $dateTimeString = $today . ' ' . $timeInput . ':00';
+        $timestamp = strtotime($dateTimeString);
 
-        // Convert to target timezone
-        $dtConverted = (clone $dtFrom)->setTimezone($to);
-        $result_display = $dtConverted->format('Y-m-d H:i:s');
-
-        // Redirect (PRG) with flash session
-        return redirect()
-            ->route('timezone.index')
-            ->with([
-                'input_datetime' => $input_display,
-                'from' => $from,
-                'to' => $to,
-                'result' => $result_display,
+        $data = null;
+        try {
+            $response = Http::get('http://api.timezonedb.com/v2.1/convert-time-zone', [
+                'key'    => $this->apiKey,
+                'format' => 'json',
+                'from'   => $from,
+                'to'     => $to,
+                'time'   => $timestamp,
             ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+            }
+        } catch (\Throwable $e) {
+            $data = null;
+        }
+
+        $zones = [];
+        try {
+            $resp2 = Http::get('http://api.timezonedb.com/v2.1/list-time-zone', [
+                'key'    => $this->apiKey,
+                'format' => 'json',
+            ]);
+            if ($resp2->successful() && isset($resp2->json()['zones'])) {
+                $zones = collect($resp2->json()['zones'])->pluck('zoneName')->toArray();
+            }
+        } catch (\Throwable $e) {
+
+        }
+        if (empty($zones)) {
+            $zones = \DateTimeZone::listIdentifiers();
+        }
+
+        return view('converter', [
+            'data'      => $data,
+            'input'     => [
+                'time' => $timeInput,
+                'from' => $from,
+                'to'   => $to,
+            ],
+            'timestamp' => $timestamp,
+            'zones'     => $zones,
+        ]);
     }
 }

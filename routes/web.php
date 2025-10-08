@@ -14,5 +14,6 @@ use App\Http\Controllers\TimezoneController;
 |
 */
 
-Route::get('/', [TimeZoneController::class, 'index'])->name('timezone.index');
-Route::post('/convert', [TimeZoneController::class, 'convert'])->name('timezone.convert');
+
+Route::get('/', [TimezoneController::class, 'index'])->name('home');
+Route::post('/convert', [TimezoneController::class, 'convert'])->name('convert.time');

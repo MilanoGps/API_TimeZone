@@ -1,80 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Zone Converter</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hasil Konversi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center px-3">
+<body class="bg-gradient-to-tr from-[#1a001f] via-[#2b0033] to-[#3a004a] min-h-screen flex items-center justify-center px-4 text-gray-100">
+  <div class="w-full max-w-lg">
+    <div class="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
+      <h1 class="text-3xl text-center font-extrabold text-pink-400 mb-6">🔮 Hasil Konversi</h1>
 
-    <div class="w-full max-w-lg">
-        <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 transition-transform hover:scale-[1.01] duration-200">
-            <h1 class="text-3xl font-extrabold text-purple-400 text-center mb-6">Time Zone Converter</h1>
+      @if(!empty($data) && isset($data['toTimestamp']))
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-[#2a0033] to-[#3a004a] p-4 rounded-xl border-l-4 border-pink-500 shadow">
+            <p class="text-gray-300 text-sm mb-1">Waktu Asal ({{ $input['from'] }})</p>
+            <p class="text-lg font-bold text-pink-300">{{ date('Y-m-d H:i:s', $timestamp) }}</p>
+          </div>
 
-            {{-- Form --}}
-            <form method="POST" action="{{ route('timezone.convert') }}" class="grid gap-6">
-                @csrf
-
-                <div>
-                    <label class="block text-gray-300 font-semibold mb-2">Datetime</label>
-                    <input type="datetime-local" name="datetime" required
-                        value="{{ old('datetime') }}"
-                        class="w-full px-4 py-3 border border-gray-600 bg-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-lg transition-all" />
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 font-semibold mb-2">From Timezone</label>
-                    <select name="from_timezone" required
-                        class="w-full px-4 py-3 border border-gray-600 bg-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-lg transition-all">
-                        @foreach($timezones as $tz)
-                            <option value="{{ $tz }}" {{ old('from_timezone') == $tz ? 'selected' : '' }}>
-                                {{ $tz }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 font-semibold mb-2">To Timezone</label>
-                    <select name="to_timezone" required
-                        class="w-full px-4 py-3 border border-gray-600 bg-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-lg transition-all">
-                        @foreach($timezones as $tz)
-                            <option value="{{ $tz }}" {{ old('to_timezone') == $tz ? 'selected' : '' }}>
-                                {{ $tz }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <button type="submit"
-                    class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-3 rounded-xl shadow-lg hover:from-purple-700 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 text-lg transition-all">
-                    Convert
-                </button>
-            </form>
-
-            @if(session('result'))
-                <div class="mt-8 bg-gray-700 border-l-4 border-purple-400 p-5 rounded-xl shadow">
-                    <h3 class="text-xl font-bold text-purple-300 mb-3">🔎 Conversion Result</h3>
-                    <div class="space-y-2">
-                        <p class="text-lg">
-                            <span class="text-gray-400">Input:</span>
-                            <strong class="text-white">{{ session('input_datetime') }}</strong>
-                            <span class="text-purple-300">({{ session('from') }})</span>
-                        </p>
-                        <p class="text-lg">
-                            <span class="text-gray-400">Converted:</span>
-                            <strong class="text-white">{{ session('result') }}</strong>
-                            <span class="text-purple-300">({{ session('to') }})</span>
-                        </p>
-                    </div>
-                </div>
-            @endif
+          <div class="bg-gradient-to-r from-[#3a004a] to-[#4b005f] p-4 rounded-xl border-l-4 border-purple-500 shadow">
+            <p class="text-gray-300 text-sm mb-1">Waktu Tujuan ({{ $input['to'] }})</p>
+            <p class="text-lg font-bold text-purple-300">{{ date('Y-m-d H:i:s', $data['toTimestamp']) }}</p>
+          </div>
         </div>
+      @else
+        <p class="text-center text-red-400 font-semibold mt-4">
+          ⚠️ Gagal, Coba Lagi.
+        </p>
+      @endif
 
-        <div class="mt-6 text-center text-gray-500 text-sm">
-            &copy; {{ date('Y') }} Aditya Meilano | IS 06-01 | IAE
-        </div>
+      <div class="mt-6 text-center">
+        <a href="{{ route('home') }}"
+           class="inline-block bg-gradient-to-r from-pink-600 to-purple-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md hover:scale-105 transition-transform duration-150">
+           ← Back
+        </a>
+      </div>
     </div>
+  </div>
 </body>
 </html>
